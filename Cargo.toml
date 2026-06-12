@@ -1,0 +1,16 @@
+[workspace]
+resolver = "3"
+members = ["stave-macros", "."]
+
+[package]
+name = "stave"
+version = "0.1.0"
+edition = "2024"
+description = "Compile-time guaranteed typestate builders via annotation"
+license = "MIT"
+
+[dependencies]
+stave-macros = { path = "./stave-macros" }
+
+[dev-dependencies]
+trybuild = "1"
