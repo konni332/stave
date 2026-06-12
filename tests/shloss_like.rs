@@ -1,13 +1,13 @@
 use stave::{builder, methods};
 
 #[derive(Debug, PartialEq)]
-enum Credentials {
+pub enum Credentials {
     Password { username: String, password: String },
     ApiKey { full_key: String },
 }
 
 #[derive(Debug, PartialEq)]
-enum TokenType {
+pub enum TokenType {
     Opaque { expires_at: String },
     Jwt { claims: String },
 }
