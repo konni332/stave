@@ -1,136 +1,222 @@
-use darling::{FromDeriveInput, FromField, ast};
-use proc_macro2::Span;
-use quote::quote;
-use syn::{Ident, Type};
+use darling::FromField;
+use heck::ToPascalCase;
+use proc_macro2::TokenStream;
+use quote::{format_ident, quote};
+use syn::{Fields, GenericParam, Generics, Ident, ItemStruct, Type, TypeParam};
 
-use crate::common::{no_ident, param_ident, with_ident};
+use crate::generics::{as_argument, params_used_by, strip_bounds};
 
-#[derive(Debug, FromField)]
+#[derive(FromField)]
 #[darling(attributes(stave))]
-struct StaveField {
+struct FieldAttrs {
     ident: Option<Ident>,
     ty: Type,
     #[darling(default)]
-    required: bool,
+    required: darling::util::Flag,
     #[darling(default)]
-    optional: bool,
+    optional: darling::util::Flag,
 }
 
-#[derive(Debug, FromDeriveInput)]
-#[darling(attributes(stave), supports(struct_named))]
-pub(crate) struct StaveBuilderInput {
-    ident: Ident,
-    vis: syn::Visibility,
-    data: ast::Data<(), StaveField>,
+/// A required field, together with the identifiers stave generates for it.
+struct RequiredField {
+    /// Original field type, e.g. `String`
+    ty: Type,
+    /// `__FooUnset`
+    unset: Ident,
+    /// `__FooSet`
+    set: Ident,
+    /// `__FooState`
+    state: Ident,
+    /// `__stave_foo`
+    storage: Ident,
+    /// The subset of the structs own generic parameters that `ty` refers to, stripped of
+    /// bounds/defaults. These parameterize `set`.
+    marker_params: Vec<GenericParam>,
 }
 
-pub(crate) fn expand_builder(input: StaveBuilderInput) -> syn::Result<proc_macro2::TokenStream> {
-    let struct_name = &input.ident;
-    let vis = &input.vis;
+/// An optional field, kept as-is but wrapped in Option<T>.
+struct OptionalField {
+    name: Ident,
+    ty: Type,
+}
 
-    let fields = input.data.take_struct().unwrap();
-    let fields = fields.fields;
-
-    for f in &fields {
-        let name = f.ident.as_ref().unwrap();
-        match (f.required, f.optional) {
-            (true, true) => {
-                return Err(syn::Error::new_spanned(
-                    name,
-                    "field cannot be both #[stave(required)] and #[stave(optional)]",
-                ));
-            }
-            (false, false) => {
-                return Err(syn::Error::new_spanned(
-                    name,
-                    "field must be annotated with either #[stave(required)] or #[stave(optional)]",
-                ));
-            }
-            _ => {}
-        }
-    }
-
-    let required: Vec<&StaveField> = fields.iter().filter(|f| f.required).collect();
-    let optional: Vec<&StaveField> = fields.iter().filter(|f| f.optional).collect();
-
-    let state_structs = required.iter().map(|f| {
-        let field_ident = f.ident.as_ref().unwrap();
-        let ty = &f.ty;
-        let no = no_ident(field_ident);
-        let with = with_ident(field_ident);
-        quote! {
-            #[doc(hidden)]
-            #[allow(non_camel_case_types)]
-            #vis struct #no;
-            #[doc(hidden)]
-            #[allow(non_camel_case_types)]
-            #vis struct #with(#vis #ty);
-        }
-    });
-
-    let generic_params: Vec<Ident> = required
-        .iter()
-        .map(|f| param_ident(f.ident.as_ref().unwrap()))
-        .collect();
-
-    let required_struct_fields = required.iter().map(|f| {
-        let field_ident = f.ident.as_ref().unwrap();
-        let param = param_ident(field_ident);
-        let hidden_ident = Ident::new(&format!("__stave_{}", field_ident), Span::call_site());
-        quote! {
-            #[doc(hidden)]
-            #hidden_ident: #param,
-        }
-    });
-
-    let optional_struct_fields = optional.iter().map(|f| {
-        let field_ident = f.ident.as_ref().unwrap();
-        let ty = &f.ty;
-        quote! {
-            #field_ident: Option<#ty>,
-        }
-    });
-
-    let struct_def = quote! {
-        #[allow(non_camel_case_types)]
-        #vis struct #struct_name < #(#generic_params),* > {
-            #(#required_struct_fields)*
-            #(#optional_struct_fields)*
+pub fn expand(input: ItemStruct) -> darling::Result<TokenStream> {
+    let fields = match &input.fields {
+        Fields::Named(fields) => &fields.named,
+        other => {
+            return Err(darling::Error::custom(
+                "#[builder] can only be applied to structs with named fields",
+            )
+            .with_span(other));
         }
     };
 
-    let no_idents: Vec<Ident> = required
-        .iter()
-        .map(|f| no_ident(f.ident.as_ref().unwrap()))
+    let mut required = Vec::new();
+    let mut optional = Vec::new();
+    let mut errors = darling::Error::accumulator();
+
+    for field in fields {
+        let Some(attrs) = errors.handle(FieldAttrs::from_field(field)) else {
+            continue;
+        };
+        let name = attrs.ident.expect("named field always has an ident");
+
+        match (attrs.required.is_present(), attrs.optional.is_present()) {
+            (true, false) => required.push(make_required_field(&input.generics, &name, attrs.ty)),
+            (false, true) => optional.push(OptionalField { name, ty: attrs.ty }),
+            (true, true) => errors.push(
+                darling::Error::custom("a field cannot be both `required` and `optional`")
+                    .with_span(&name),
+            ),
+            (false, false) => optional.push(OptionalField { name, ty: attrs.ty }),
+        }
+    }
+    errors.finish()?;
+
+    Ok(generate(&input, &required, &optional))
+}
+
+fn make_required_field(generics: &Generics, name: &Ident, ty: Type) -> RequiredField {
+    let pascal = name.to_string().to_pascal_case();
+    let marker_params = params_used_by(generics, &ty)
+        .into_iter()
+        .map(strip_bounds)
         .collect();
 
-    let hidden_field_inits_no = required.iter().map(|f| {
-        let field_ident = f.ident.as_ref().unwrap();
-        let no = no_ident(field_ident);
-        let hidden_ident = Ident::new(&format!("__stave_{}", field_ident), Span::call_site());
-        quote! { #hidden_ident: #no, }
+    RequiredField {
+        ty,
+        unset: format_ident!("__{pascal}Unset"),
+        set: format_ident!("__{pascal}Set"),
+        state: format_ident!("__{pascal}State"),
+        storage: format_ident!("__stave_{name}"),
+        marker_params,
+    }
+}
+
+fn generate(
+    input: &ItemStruct,
+    required: &[RequiredField],
+    optional: &[OptionalField],
+) -> TokenStream {
+    let vis = &input.vis;
+    let ident = &input.ident;
+    let attrs = &input.attrs;
+    let where_clause = &input.generics.where_clause;
+
+    let markers = required.iter().map(|f| {
+        let RequiredField {
+            ty,
+            unset,
+            set,
+            marker_params,
+            ..
+        } = f;
+        quote! {
+            #[doc(hidden)]
+            #[allow(non_camel_case_types, dead_code)]
+            pub(crate) struct #unset;
+
+            #[doc(hidden)]
+            #[allow(non_camel_case_types, dead_code)]
+            pub(crate) struct #set<#(#marker_params),*>(#ty);
+        }
     });
 
-    let optional_field_inits_none = optional.iter().map(|f| {
-        let field_ident = f.ident.as_ref().unwrap();
-        quote! { #field_ident: None, }
+    let state_params = required.iter().map(|f| {
+        GenericParam::Type(TypeParam {
+            attrs: Vec::new(),
+            ident: f.state.clone(),
+            colon_token: None,
+            bounds: Default::default(),
+            eq_token: None,
+            default: None,
+        })
     });
 
-    let new_impl = quote! {
-        #[allow(non_camel_case_types)]
-        impl #struct_name < #(#no_idents),* > {
+    let struct_params = input.generics.params.iter().cloned().chain(state_params);
+
+    let storage_fields = required.iter().map(|f| {
+        let RequiredField { storage, state, .. } = f;
+        quote! { #storage: #state }
+    });
+
+    let optional_fields = optional.iter().map(|f| {
+        let OptionalField { name, ty } = f;
+        quote! { #name: ::core::option::Option<#ty> }
+    });
+
+    // the structs own generic params don't necessarily appear in any of its own fields (they may
+    // only appear inside `__FooSet<...>`, which `Self` never names directly). A `PhantomData`
+    // field "uses" each of them so the compiler does not complain.
+    let phantom_field = phantom_field(&input.generics);
+    let phantom_init = phantom_field
+        .is_some()
+        .then(|| quote! { __stave_phantom: ::core::marker::PhantomData });
+
+    let new_impl_params = &input.generics.params;
+    let new_struct_args = input
+        .generics
+        .params
+        .iter()
+        .map(as_argument)
+        .chain(required.iter().map(|f| {
+            let unset = &f.unset;
+            quote! { #unset }
+        }));
+
+    let storage_inits = required.iter().map(|f| {
+        let RequiredField { storage, unset, .. } = f;
+        quote! { #storage: #unset }
+    });
+
+    let optional_inits = optional.iter().map(|f| {
+        let name = &f.name;
+        quote! { #name: ::core::option::Option::None }
+    });
+
+    quote! {
+        #(#markers)*
+
+        #(#attrs)*
+        #vis struct #ident <#(#struct_params),*> #where_clause {
+            #(#storage_fields,)*
+            #(#optional_fields,)*
+            #phantom_field
+        }
+
+        impl <#new_impl_params> #ident <#(#new_struct_args),*> #where_clause {
             pub fn new() -> Self {
-                Self {
-                    #(#hidden_field_inits_no)*
-                    #(#optional_field_inits_none)*
+                #ident {
+                    #(#storage_inits,)*
+                    #(#optional_inits,)*
+                    #phantom_init
                 }
             }
         }
-    };
+    }
+}
 
-    Ok(quote! {
-        #(#state_structs)*
-        #struct_def
-        #new_impl
+fn phantom_field(generics: &Generics) -> Option<TokenStream> {
+    if generics.params.is_empty() {
+        return None;
+    }
+
+    let phantom_types = generics.params.iter().map(|param| match param {
+        GenericParam::Lifetime(lt) => {
+            let lifetime = &lt.lifetime;
+            quote! { &#lifetime () }
+        }
+        GenericParam::Type(ty) => {
+            let ident = &ty.ident;
+            quote! { #ident }
+        }
+        GenericParam::Const(c) => {
+            let ident = &c.ident;
+            quote! { [(); #ident] }
+        }
+    });
+
+    Some(quote! {
+        __stave_phantom: ::core::marker::PhantomData<(#(#phantom_types),*)>
     })
 }
