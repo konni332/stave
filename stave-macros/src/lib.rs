@@ -4,6 +4,8 @@ use syn::{ItemStruct, parse_macro_input};
 mod builder;
 mod common;
 mod generics;
+mod methods;
+mod registry;
 
 /// Turns a plain struct into a typestate builder.
 ///

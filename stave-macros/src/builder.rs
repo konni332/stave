@@ -1,10 +1,13 @@
 use darling::FromField;
 use heck::ToPascalCase;
 use proc_macro2::TokenStream;
-use quote::{format_ident, quote};
+use quote::{ToTokens, format_ident, quote};
 use syn::{Fields, GenericParam, Generics, Ident, ItemStruct, Type, TypeParam};
 
-use crate::generics::{as_argument, params_used_by, strip_bounds};
+use crate::{
+    generics::{as_argument, params_used_by, strip_bounds},
+    registry,
+};
 
 #[derive(FromField)]
 #[darling(attributes(stave))]
@@ -19,6 +22,8 @@ struct FieldAttrs {
 
 /// A required field, together with the identifiers stave generates for it.
 struct RequiredField {
+    /// The fields original name
+    name: Ident,
     /// Original field type, e.g. `String`
     ty: Type,
     /// `__FooUnset`
@@ -73,6 +78,8 @@ pub fn expand(input: ItemStruct) -> darling::Result<TokenStream> {
     }
     errors.finish()?;
 
+    register_struct_info(&input, &required, &optional);
+
     Ok(generate(&input, &required, &optional))
 }
 
@@ -84,6 +91,7 @@ fn make_required_field(generics: &Generics, name: &Ident, ty: Type) -> RequiredF
         .collect();
 
     RequiredField {
+        name: name.clone(),
         ty,
         unset: format_ident!("__{pascal}Unset"),
         set: format_ident!("__{pascal}Set"),
@@ -219,4 +227,56 @@ fn phantom_field(generics: &Generics) -> Option<TokenStream> {
     Some(quote! {
         __stave_phantom: ::core::marker::PhantomData<(#(#phantom_types),*)>
     })
+}
+
+fn register_struct_info(
+    input: &ItemStruct,
+    required: &[RequiredField],
+    optional: &[OptionalField],
+) {
+    let generic_params = input.generics.params.to_token_stream().to_string();
+    let where_clause = input
+        .generics
+        .where_clause
+        .as_ref()
+        .map(|w| w.to_token_stream().to_string())
+        .unwrap_or_default();
+
+    let required = required
+        .iter()
+        .map(|f| registry::RequiredFieldInfo {
+            name: f.name.to_string(),
+            ty: f.ty.to_token_stream().to_string(),
+            marker_params: f
+                .marker_params
+                .iter()
+                .map(|p| p.to_token_stream().to_string())
+                .collect::<Vec<_>>()
+                .join(","),
+            marker_args: f
+                .marker_params
+                .iter()
+                .map(|p| as_argument(p).to_string())
+                .collect::<Vec<_>>()
+                .join("j"),
+        })
+        .collect();
+
+    let optional = optional
+        .iter()
+        .map(|f| registry::FieldInfo {
+            name: f.name.to_string(),
+            ty: f.ty.to_token_stream().to_string(),
+        })
+        .collect();
+
+    registry::register(
+        input.ident.to_string(),
+        registry::StructInfo {
+            generic_params,
+            where_clause,
+            required,
+            optional,
+        },
+    );
 }
