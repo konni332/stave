@@ -269,10 +269,21 @@ fn register_struct_info(
             ty: f.ty.to_token_stream().to_string(),
         })
         .collect();
+    let generic_args = input
+        .generics
+        .params
+        .iter()
+        .map(as_argument)
+        .collect::<Vec<_>>()
+        .into_iter()
+        .map(|ts| ts.to_string())
+        .collect::<Vec<_>>()
+        .join(",");
 
     registry::register(
         input.ident.to_string(),
         registry::StructInfo {
+            generic_args,
             generic_params,
             where_clause,
             required,

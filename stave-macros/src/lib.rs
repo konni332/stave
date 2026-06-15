@@ -1,5 +1,5 @@
 use proc_macro::TokenStream;
-use syn::{ItemStruct, parse_macro_input};
+use syn::{ItemImpl, ItemStruct, parse_macro_input};
 
 mod builder;
 mod common;
@@ -46,6 +46,15 @@ pub fn builder(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = parse_macro_input!(item as ItemStruct);
 
     builder::expand(input)
+        .unwrap_or_else(|err| err.write_errors())
+        .into()
+}
+
+#[proc_macro_attribute]
+pub fn methods(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(item as ItemImpl);
+
+    methods::expand(input)
         .unwrap_or_else(|err| err.write_errors())
         .into()
 }
