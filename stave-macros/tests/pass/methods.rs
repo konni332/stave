@@ -25,13 +25,13 @@ struct Config {
 #[methods]
 impl Server {
     #[sets(host)]
-    fn sets_host(self, value: impl Into<String>) -> String {
+    fn set_host(self, value: impl Into<String>) -> String {
         value.into()
     }
 
     #[sets(note)]
     #[requires(host)]
-    fn sets_note_with_host(mut self, extra: &str) -> String {
+    fn set_note_with_host(mut self, extra: &str) -> String {
         format!("{}-{extra}", self.__stave_host.0)
     }
 
@@ -47,13 +47,13 @@ impl Server {
 }
 
 fn main() {
-    let server1 = Server::new().sets_port(8080).sets_host("localhost");
+    let server1 = Server::new().set_port(8080).set_host("localhost");
 
     let server2 = Server::new()
-        .sets_host("localhost")
-        .sets_port(8080)
-        .sets_timeout(Duration::from_secs(5))
-        .sets_note_with_host("extra");
+        .set_host("localhost")
+        .set_port(8080)
+        .set_timeout(Duration::from_secs(5))
+        .set_note_with_host("extra");
 
     let host = server1.host();
     let port = server2.port();

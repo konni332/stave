@@ -1,11 +1,11 @@
 error[E0599]: no method named `finish` found for struct `Server<__HostUnset, __PortUnset>` in the current scope
-  --> tests/fail/methods_required_not_available.rs:48:64
+  --> tests/fail/methods_required_not_available.rs:48:63
    |
  5 | #[builder]
    | ---------- method `finish` not found for this struct
 ...
-48 |     let _ = Server::new().sets_timeout(Duration::from_secs(5)).finish();
-   |                                                                ^^^^^^ method not found in `Server<__HostUnset, __PortUnset>`
+48 |     let _ = Server::new().set_timeout(Duration::from_secs(5)).finish();
+   |                                                               ^^^^^^ method not found in `Server<__HostUnset, __PortUnset>`
    |
    = note: the method was found for
            - `Server<__HostSet, __PortSet>`
@@ -14,13 +14,13 @@ error[E0599]: no method named `finish` found for struct `Server<__HostUnset, __P
            candidate #1: `Hasher`
 
 error[E0599]: no method named `finish` found for struct `Server<__HostSet, __PortUnset>` in the current scope
-  --> tests/fail/methods_required_not_available.rs:50:50
+  --> tests/fail/methods_required_not_available.rs:50:49
    |
  5 | #[builder]
    | ---------- method `finish` not found for this struct
 ...
-50 |     let _ = Server::new().sets_host("localhost").finish();
-   |                                                  ^^^^^^ method not found in `Server<__HostSet, __PortUnset>`
+50 |     let _ = Server::new().set_host("localhost").finish();
+   |                                                 ^^^^^^ method not found in `Server<__HostSet, __PortUnset>`
    |
    = note: the method was found for
            - `Server<__HostSet, __PortSet>`
@@ -28,14 +28,14 @@ error[E0599]: no method named `finish` found for struct `Server<__HostSet, __Por
    = note: the following trait defines an item `finish`, perhaps you need to implement it:
            candidate #1: `Hasher`
 
-error[E0599]: no method named `sets_note_with_host` found for struct `Server<__HostUnset, __PortSet>` in the current scope
-  --> tests/fail/methods_required_not_available.rs:52:43
+error[E0599]: no method named `set_note_with_host` found for struct `Server<__HostUnset, __PortSet>` in the current scope
+  --> tests/fail/methods_required_not_available.rs:52:42
    |
  5 | #[builder]
-   | ---------- method `sets_note_with_host` not found for this struct
+   | ---------- method `set_note_with_host` not found for this struct
 ...
-52 |     let _ = Server::new().sets_port(8080).sets_note_with_host();
-   |                                           ^^^^^^^^^^^^^^^^^^^ method not found in `Server<__HostUnset, __PortSet>`
+52 |     let _ = Server::new().set_port(8080).set_note_with_host();
+   |                                          ^^^^^^^^^^^^^^^^^^ method not found in `Server<__HostUnset, __PortSet>`
    |
    = note: the method was found for
            - `Server<__HostSet, __PortState>`

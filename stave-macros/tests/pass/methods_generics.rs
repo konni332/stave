@@ -14,7 +14,7 @@ struct Cache<'a, T: Clone, const N: usize> {
 #[methods]
 impl Cache {
     #[sets(name)]
-    fn sets_name<S>(self, value: &'a S) -> &'a str
+    fn set_name<S>(self, value: &'a S) -> &'a str
     where
         S: AsRef<str> + ?Sized,
     {
@@ -23,7 +23,7 @@ impl Cache {
 
     #[sets(note)]
     #[requires(items, name)]
-    fn sets_note_from_self<D: std::fmt::Display>(mut self, prefix: D) -> String {
+    fn set_note_from_self<D: std::fmt::Display>(mut self, prefix: D) -> String {
         format!(
             "{prefix}: {} items named {}",
             self.__stave_items.0.len(),
@@ -43,9 +43,9 @@ impl Cache {
 
 fn main() {
     let cache = Cache::new()
-        .sets_items([1, 2, 3])
-        .sets_name("numbers")
-        .sets_note_from_self("prefix");
+        .set_items([1, 2, 3])
+        .set_name("numbers")
+        .set_note_from_self("prefix");
 
     assert_eq!(cache.describe(), "3 items named 'numbers'");
     assert_eq!(cache.items(), &[1, 2, 3]);

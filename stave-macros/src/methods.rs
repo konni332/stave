@@ -542,7 +542,7 @@ fn auto_required_setter(self_ident: &Ident, fields: &Fields, field: &RequiredFie
     fixed.insert(field.name.to_string(), FixedState::Set);
     let output_self = self_type_for(self_ident, fields, &fixed);
 
-    let sets_fn = format_ident!("sets_{}", field.name);
+    let sets_fn = format_ident!("set_{}", field.name);
     let ty = &field.ty;
     let set = &field.set;
     let rebuild = rebuild_self(self_ident, fields, field, quote! { #set(value) });
@@ -560,7 +560,7 @@ fn auto_optional_setter(self_ident: &Ident, fields: &Fields, field: &OptionalFie
     let generics = impl_generics(fields, &HashSet::new());
     let self_ty = self_type_for(self_ident, fields, &HashMap::new());
 
-    let sets_fn = format_ident!("sets_{}", field.name);
+    let sets_fn = format_ident!("set_{}", field.name);
     let ty = &field.ty;
     let name = &field.name;
     let where_clause = &fields.where_clause;
