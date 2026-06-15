@@ -2,15 +2,30 @@
 resolver = "3"
 members = ["stave-macros", "."]
 
+[workspace.package]
+license = "MIT"
+repository = "https://github.com/konni332/stave"
+edition = "2024"
+authors = ["konni332"]
+documentation = "https://docs.rs/stave"
+description = "A compile-time typestate validation macro for type-safe builders."
+keywords = ["builder", "typestate", "proc-macro", "compile-time", "validation"]
+categories = ["development-tools::procedural-macros", "rust-patterns"]
+
 [package]
 name = "stave"
 version = "0.1.0"
-edition = "2024"
-description = "Compile-time guaranteed typestate builders via annotation"
-license = "MIT"
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+documentation.workspace = true
+description.workspace = true
+keywords.workspace = true
+categories.workspace = true
 
 [dependencies]
-stave-macros = { path = "./stave-macros" }
+stave-macros = { version = "0.1", path = "./stave-macros" }
 
 [dev-dependencies]
 trybuild = "1"
