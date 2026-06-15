@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use std::time::Duration;
 
 use stave_macros::{builder, methods};
@@ -47,35 +45,9 @@ impl Server {
 }
 
 fn main() {
-    let config1 = Server::new()
-        .sets_port(8080)
-        .sets_host("localhost")
-        .finish();
+    let _ = Server::new().sets_timeout(Duration::from_secs(5)).finish();
 
-    let config2 = Server::new()
-        .sets_host("localhost")
-        .sets_port(8080)
-        .sets_timeout(Duration::from_secs(5))
-        .sets_note_with_host("extra")
-        .finish();
+    let _ = Server::new().sets_host("localhost").finish();
 
-    assert_eq!(
-        config1,
-        Config {
-            host: "localhost".to_string(),
-            port: 8080,
-            timeout: None,
-            note: None
-        }
-    );
-
-    assert_eq!(
-        config2,
-        Config {
-            host: "localhost".to_string(),
-            port: 8080,
-            timeout: Some(Duration::from_secs(5)),
-            note: Some("localhost-extra".to_string()),
-        }
-    )
+    let _ = Server::new().sets_port(8080).set_note_with_host();
 }

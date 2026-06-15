@@ -1,0 +1,5 @@
+error: a field cannot be both `required` and `optional`
+ --> tests/fail/builder_required_and_optional.rs:6:5
+  |
+6 |     name: String,
+  |     ^^^^
