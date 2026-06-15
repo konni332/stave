@@ -258,7 +258,7 @@ fn register_struct_info(
                 .iter()
                 .map(|p| as_argument(p).to_string())
                 .collect::<Vec<_>>()
-                .join("j"),
+                .join(","),
         })
         .collect();
 

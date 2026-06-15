@@ -1,0 +1,5 @@
+error: multiple `sets` methods for field `name`
+  --> tests/fail/methods_duplicate_sets.rs:16:12
+   |
+16 |     #[sets(name)]
+   |            ^^^^

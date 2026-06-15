@@ -1,0 +1,5 @@
+error: #[methods] does not support trait implementations
+ --> tests/fail/methods_trait_impl.rs:6:6
+  |
+6 | impl Clone for Widget {
+  |      ^^^^^

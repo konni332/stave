@@ -1,0 +1,5 @@
+error: only methods are supported inside a #[methods] impl block
+  --> tests/fail/methods_non_fn_item.rs:11:5
+   |
+11 |     const VERSION: u32 = 1;
+   |     ^^^^^

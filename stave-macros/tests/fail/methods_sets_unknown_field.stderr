@@ -1,0 +1,5 @@
+error: `missing` is not a field of this struct
+  --> tests/fail/methods_sets_unknown_field.rs:11:12
+   |
+11 |     #[sets(missing)]
+   |            ^^^^^^^

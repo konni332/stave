@@ -28,18 +28,14 @@ error[E0599]: no method named `finish` found for struct `Server<__HostSet, __Por
    = note: the following trait defines an item `finish`, perhaps you need to implement it:
            candidate #1: `Hasher`
 
-error[E0599]: no method named `set_note_with_host` found for struct `Server<__HostState, __PortState>` in the current scope
+error[E0599]: no method named `sets_note_with_host` found for struct `Server<__HostUnset, __PortSet>` in the current scope
   --> tests/fail/methods_required_not_available.rs:52:43
    |
  5 | #[builder]
-   | ---------- method `set_note_with_host` not found for this struct
+   | ---------- method `sets_note_with_host` not found for this struct
 ...
-52 |     let _ = Server::new().sets_port(8080).set_note_with_host();
-   |                                           ^^^^^^^^^^^^^^^^^^
+52 |     let _ = Server::new().sets_port(8080).sets_note_with_host();
+   |                                           ^^^^^^^^^^^^^^^^^^^ method not found in `Server<__HostUnset, __PortSet>`
    |
-help: there is a method `sets_host` with a similar name, but with different arguments
-  --> tests/fail/methods_required_not_available.rs:23:1
-   |
-23 | #[methods]
-   | ^^^^^^^^^^
-   = note: this error originates in the attribute macro `methods` (in Nightly builds, run with -Z macro-backtrace for more info)
+   = note: the method was found for
+           - `Server<__HostSet, __PortState>`

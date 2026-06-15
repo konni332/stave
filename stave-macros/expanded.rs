@@ -179,16 +179,17 @@ mod pass {
             }
         }
         fn main() {
-            let config1 = Server::new().sets_port(8080).sets_host("localhost").finish();
-            let config2 = Server::new()
+            let server1 = Server::new().sets_port(8080).sets_host("localhost");
+            let server2 = Server::new()
                 .sets_host("localhost")
                 .sets_port(8080)
                 .sets_timeout(Duration::from_secs(5))
-                .sets_note_with_host("extra")
-                .finish();
-            let host = config1.host();
-            let port = config1.port();
-            match (&host, &"localhost".to_string()) {
+                .sets_note_with_host("extra");
+            let host = server1.host();
+            let port = server2.port();
+            let timeout = server1.timeout();
+            let note = server1.note();
+            match (&host, &"localhost") {
                 (left_val, right_val) => {
                     if !(*left_val == *right_val) {
                         let kind = ::core::panicking::AssertKind::Eq;
@@ -201,7 +202,7 @@ mod pass {
                     }
                 }
             };
-            match (&port, &8080) {
+            match (&port, &&8080) {
                 (left_val, right_val) => {
                     if !(*left_val == *right_val) {
                         let kind = ::core::panicking::AssertKind::Eq;
@@ -214,6 +215,34 @@ mod pass {
                     }
                 }
             };
+            match (&timeout, &&None) {
+                (left_val, right_val) => {
+                    if !(*left_val == *right_val) {
+                        let kind = ::core::panicking::AssertKind::Eq;
+                        ::core::panicking::assert_failed(
+                            kind,
+                            &*left_val,
+                            &*right_val,
+                            ::core::option::Option::None,
+                        );
+                    }
+                }
+            };
+            match (&note, &&None) {
+                (left_val, right_val) => {
+                    if !(*left_val == *right_val) {
+                        let kind = ::core::panicking::AssertKind::Eq;
+                        ::core::panicking::assert_failed(
+                            kind,
+                            &*left_val,
+                            &*right_val,
+                            ::core::option::Option::None,
+                        );
+                    }
+                }
+            };
+            let config1 = server1.finish();
+            let config2 = server2.finish();
             match (
                 &config1,
                 &Config {
@@ -256,6 +285,209 @@ mod pass {
                     }
                 }
             }
+        }
+    }
+    mod methods_generics {
+        #![allow(dead_code)]
+        use stave_macros::{builder, methods};
+        #[doc(hidden)]
+        #[allow(non_camel_case_types, dead_code)]
+        pub(crate) struct __ItemsUnset;
+        #[doc(hidden)]
+        #[allow(non_camel_case_types, dead_code)]
+        pub(crate) struct __ItemsSet<T, const N: usize>([T; N]);
+        #[doc(hidden)]
+        #[allow(non_camel_case_types, dead_code)]
+        pub(crate) struct __NameUnset;
+        #[doc(hidden)]
+        #[allow(non_camel_case_types, dead_code)]
+        pub(crate) struct __NameSet<'a>(&'a str);
+        struct Cache<'a, T: Clone, const N: usize, __ItemsState, __NameState> {
+            __stave_items: __ItemsState,
+            __stave_name: __NameState,
+            note: ::core::option::Option<String>,
+            __stave_phantom: ::core::marker::PhantomData<(&'a (), T, [(); N])>,
+        }
+        impl<'a, T: Clone, const N: usize> Cache<'a, T, N, __ItemsUnset, __NameUnset> {
+            pub fn new() -> Self {
+                Cache {
+                    __stave_items: __ItemsUnset,
+                    __stave_name: __NameUnset,
+                    note: ::core::option::Option::None,
+                    __stave_phantom: ::core::marker::PhantomData,
+                }
+            }
+        }
+        impl<
+            'a,
+            T: Clone,
+            const N: usize,
+            __ItemsState,
+        > Cache<'a, T, N, __ItemsState, __NameUnset> {
+            fn sets_name<S>(
+                self,
+                value: &'a S,
+            ) -> Cache<'a, T, N, __ItemsState, __NameSet<'a>>
+            where
+                S: AsRef<str> + ?Sized,
+            {
+                let __stave_value: &'a str = { value.as_ref() };
+                Cache {
+                    __stave_items: self.__stave_items,
+                    __stave_name: __NameSet(__stave_value),
+                    note: self.note,
+                    __stave_phantom: self.__stave_phantom,
+                }
+            }
+        }
+        impl<
+            'a,
+            T: Clone,
+            const N: usize,
+        > Cache<'a, T, N, __ItemsSet<TjN>, __NameSet<'a>> {
+            fn sets_note_from_self<D: std::fmt::Display>(
+                mut self,
+                prefix: D,
+            ) -> Cache<'a, T, N, __ItemsSet<TjN>, __NameSet<'a>> {
+                let __stave_value: String = {
+                    ::alloc::__export::must_use({
+                        ::alloc::fmt::format(
+                            format_args!(
+                                "{2}: {0} items named {1}",
+                                self.__stave_items.0.len(),
+                                self.__stave_name.0,
+                                prefix,
+                            ),
+                        )
+                    })
+                };
+                self.note = ::core::option::Option::Some(__stave_value);
+                self
+            }
+        }
+        impl<
+            'a,
+            T: Clone,
+            const N: usize,
+        > Cache<'a, T, N, __ItemsSet<TjN>, __NameSet<'a>> {
+            fn describe(&self) -> String {
+                ::alloc::__export::must_use({
+                    ::alloc::fmt::format(
+                        format_args!(
+                            "{0} items named \'{1}\'",
+                            self.__stave_items.0.len(),
+                            self.__stave_name.0,
+                        ),
+                    )
+                })
+            }
+        }
+        impl<
+            'a,
+            T: Clone,
+            const N: usize,
+            __NameState,
+        > Cache<'a, T, N, __ItemsUnset, __NameState> {
+            pub fn sets_items(
+                self,
+                value: [T; N],
+            ) -> Cache<'a, T, N, __ItemsSet<TjN>, __NameState> {
+                Cache {
+                    __stave_items: __ItemsSet(value),
+                    __stave_name: self.__stave_name,
+                    note: self.note,
+                    __stave_phantom: self.__stave_phantom,
+                }
+            }
+        }
+        impl<
+            'a,
+            T: Clone,
+            const N: usize,
+            __NameState,
+        > Cache<'a, T, N, __ItemsSet<TjN>, __NameState> {
+            pub fn items(&self) -> &[T; N] {
+                &self.__stave_items.0
+            }
+        }
+        impl<
+            'a,
+            T: Clone,
+            const N: usize,
+            __ItemsState,
+        > Cache<'a, T, N, __ItemsState, __NameSet<'a>> {
+            pub fn name(&self) -> &&'a str {
+                &self.__stave_name.0
+            }
+        }
+        impl<
+            'a,
+            T: Clone,
+            const N: usize,
+            __ItemsState,
+            __NameState,
+        > Cache<'a, T, N, __ItemsState, __NameState> {
+            pub fn note(&self) -> &::core::option::Option<String> {
+                &self.note
+            }
+        }
+        fn main() {
+            let cache = Cache::new()
+                .sets_items([1, 2, 3])
+                .sets_name("numbers")
+                .sets_note_from_self("prefix");
+            match (&cache.describe(), &"3 items named 'numbers'") {
+                (left_val, right_val) => {
+                    if !(*left_val == *right_val) {
+                        let kind = ::core::panicking::AssertKind::Eq;
+                        ::core::panicking::assert_failed(
+                            kind,
+                            &*left_val,
+                            &*right_val,
+                            ::core::option::Option::None,
+                        );
+                    }
+                }
+            };
+            match (&cache.items(), &&[1, 2, 3]) {
+                (left_val, right_val) => {
+                    if !(*left_val == *right_val) {
+                        let kind = ::core::panicking::AssertKind::Eq;
+                        ::core::panicking::assert_failed(
+                            kind,
+                            &*left_val,
+                            &*right_val,
+                            ::core::option::Option::None,
+                        );
+                    }
+                }
+            };
+            match (&cache.name(), &&"numbers") {
+                (left_val, right_val) => {
+                    if !(*left_val == *right_val) {
+                        let kind = ::core::panicking::AssertKind::Eq;
+                        ::core::panicking::assert_failed(
+                            kind,
+                            &*left_val,
+                            &*right_val,
+                            ::core::option::Option::None,
+                        );
+                    }
+                }
+            };
+            match (&cache.note(), &&Some("prefix: 3 items named numbers".to_string())) {
+                (left_val, right_val) => {
+                    if !(*left_val == *right_val) {
+                        let kind = ::core::panicking::AssertKind::Eq;
+                        ::core::panicking::assert_failed(
+                            kind,
+                            &*left_val,
+                            &*right_val,
+                            ::core::option::Option::None,
+                        );
+                    }
+                }
+            };
         }
     }
     fn main() {}

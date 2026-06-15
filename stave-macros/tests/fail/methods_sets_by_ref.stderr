@@ -1,0 +1,5 @@
+error: a `sets` method must take `self` by value (`self` or `mut self`), since it consumes the builder to change its type
+  --> tests/fail/methods_sets_by_ref.rs:12:18
+   |
+12 |     fn sets_name(&self, value: String) -> String {
+   |                  ^

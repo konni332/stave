@@ -1,0 +1,5 @@
+error: `required` can only reference required fields, but `note` is optional
+  --> tests/fail/methods_requires_optional_field.rs:12:16
+   |
+12 |     #[requires(note)]
+   |                ^^^^

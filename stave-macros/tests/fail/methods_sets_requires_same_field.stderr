@@ -1,0 +1,7 @@
+error: `name` cannot appear in both sets and `requires` on the same method
+ --> tests/fail/methods_sets_requires_same_field.rs:9:1
+  |
+9 | #[methods]
+  | ^^^^^^^^^^
+  |
+  = note: this error originates in the attribute macro `methods` (in Nightly builds, run with -Z macro-backtrace for more info)

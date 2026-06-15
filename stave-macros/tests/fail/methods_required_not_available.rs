@@ -49,5 +49,5 @@ fn main() {
 
     let _ = Server::new().sets_host("localhost").finish();
 
-    let _ = Server::new().sets_port(8080).set_note_with_host();
+    let _ = Server::new().sets_port(8080).sets_note_with_host();
 }

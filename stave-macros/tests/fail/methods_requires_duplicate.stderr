@@ -1,0 +1,5 @@
+error: `name` is listed twice in `requires`
+  --> tests/fail/methods_requires_duplicate.rs:11:22
+   |
+11 |     #[requires(name, name)]
+   |                      ^^^^

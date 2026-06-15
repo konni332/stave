@@ -1,0 +1,5 @@
+error: no `#[builder]` struct `Widget` was found; make sure `#[builder]` is applied to `Widget` and its definition appears earlier in this file than this `#[methods]` blocks
+ --> tests/fail/methods_missing_builder.rs:8:6
+  |
+8 | impl Widget {
+  |      ^^^^^^

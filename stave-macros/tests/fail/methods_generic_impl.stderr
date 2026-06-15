@@ -1,0 +1,5 @@
+error: #[methods] impl blocks should not declare their own generic parameters; #[builder] already recorded the structs generics
+ --> tests/fail/methods_generic_impl.rs:6:5
+  |
+6 | impl<T> Widget {
+  |     ^

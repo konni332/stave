@@ -1,0 +1,7 @@
+error: #[builder] can only be applied to structs with named fields
+ --> tests/fail/builder_unit_struct.rs:3:1
+  |
+3 | #[builder]
+  | ^^^^^^^^^^
+  |
+  = note: this error originates in the attribute macro `builder` (in Nightly builds, run with -Z macro-backtrace for more info)
