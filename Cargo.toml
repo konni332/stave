@@ -10,7 +10,7 @@ authors = ["konni332"]
 documentation = "https://docs.rs/stave"
 description = "A compile-time typestate validation macro for type-safe builders."
 keywords = ["builder", "typestate", "proc-macro", "compile-time", "validation"]
-categories = ["development-tools::procedural-macros", "rust-patterns"]
+categories = ["rust-patterns"]
 
 [package]
 name = "stave"
