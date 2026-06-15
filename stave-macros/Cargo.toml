@@ -9,6 +9,7 @@ documentation.workspace = true
 description.workspace = true
 keywords.workspace = true
 categories.workspace = true
+exclude = ["**/*.stderr"]
 
 [lib]
 proc-macro = true

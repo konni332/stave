@@ -23,6 +23,7 @@ documentation.workspace = true
 description.workspace = true
 keywords.workspace = true
 categories.workspace = true
+exclude = ["**/*.stderr"]
 
 [dependencies]
 stave-macros = { version = "0.1", path = "./stave-macros" }
