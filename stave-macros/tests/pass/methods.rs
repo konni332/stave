@@ -47,18 +47,26 @@ impl Server {
 }
 
 fn main() {
-    let config1 = Server::new()
-        .sets_port(8080)
-        .sets_host("localhost")
-        .finish();
+    let server1 = Server::new().sets_port(8080).sets_host("localhost");
 
-    let config2 = Server::new()
+    let server2 = Server::new()
         .sets_host("localhost")
         .sets_port(8080)
         .sets_timeout(Duration::from_secs(5))
-        .sets_note_with_host("extra")
-        .finish();
+        .sets_note_with_host("extra");
 
+    let host = server1.host();
+    let port = server2.port();
+    let timeout = server1.timeout();
+    let note = server1.note();
+
+    assert_eq!(host, "localhost");
+    assert_eq!(port, &8080);
+    assert_eq!(timeout, &None);
+    assert_eq!(note, &None);
+
+    let config1 = server1.finish();
+    let config2 = server2.finish();
     assert_eq!(
         config1,
         Config {

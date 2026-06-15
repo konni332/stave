@@ -17,8 +17,9 @@ pub struct RequiredFieldInfo {
     pub ty: Tokens,
     /// The structs own generic parameters (with bounds) that this fields marker types are
     /// parameterized over, e.g. `T, const N: usize`.
-    #[allow(dead_code)] // for some reason the compiler does not pickup on its usage in the
+    // For some reason the compiler does not pickup on its usage in the
     // `quote!` macro
+    #[allow(dead_code)]
     pub marker_params: Tokens,
     /// The same parameters in argument position, e.g. `T, N`.
     pub marker_args: Tokens,

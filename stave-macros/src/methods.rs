@@ -66,11 +66,13 @@ pub fn expand(input: ItemImpl) -> darling::Result<TokenStream> {
         if !covered.contains(field.name.to_string().as_str()) {
             impls.push(auto_required_setter(&self_ident, &fields, field));
         }
+        impls.push(auto_required_getter(&self_ident, &fields, field));
     }
     for field in &fields.optional {
         if !covered.contains(field.name.to_string().as_str()) {
             impls.push(auto_optional_setter(&self_ident, &fields, field));
         }
+        impls.push(auto_optional_getter(&self_ident, &fields, field));
     }
 
     Ok(quote! { #(#impls)* })
@@ -568,6 +570,43 @@ fn auto_optional_setter(self_ident: &Ident, fields: &Fields, field: &OptionalFie
             pub fn #sets_fn(mut self, value: #ty) -> Self {
                 self.#name = ::core::option::Option::Some(value);
                 self
+            }
+        }
+    }
+}
+
+fn auto_optional_getter(self_ident: &Ident, fields: &Fields, field: &OptionalField) -> TokenStream {
+    let generics = impl_generics(fields, &HashSet::new());
+    let self_ty = self_type_for(self_ident, fields, &HashMap::new());
+    let where_clause = &fields.where_clause;
+    let field_ty = &field.ty;
+    let field_name = &field.name;
+    quote! {
+        impl<#generics> #self_ty #where_clause {
+            pub fn #field_name(&self) -> &::core::option::Option<#field_ty> {
+                &self.#field_name
+            }
+        }
+    }
+}
+
+fn auto_required_getter(self_ident: &Ident, fields: &Fields, field: &RequiredField) -> TokenStream {
+    let mut fixed = HashMap::new();
+    fixed.insert(field.name.to_string(), FixedState::Set);
+    let fixed_names: HashSet<String> = std::iter::once(field.name.to_string()).collect();
+
+    let generics = impl_generics(fields, &fixed_names);
+    let self_ty = self_type_for(self_ident, fields, &fixed);
+
+    let where_clause = &fields.where_clause;
+
+    let field_ty = &field.ty;
+    let fn_name = &field.name;
+    let field_name = format_ident!("__stave_{}", field.name);
+    quote! {
+        impl<#generics> #self_ty #where_clause {
+            pub fn #fn_name(&self) -> &#field_ty {
+                &self.#field_name.0
             }
         }
     }
