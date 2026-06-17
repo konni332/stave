@@ -380,12 +380,7 @@ fn generate_method(
 
     match sets {
         Some(field_name) => {
-            if !covered.insert(field_name.to_string()) {
-                return Err(darling::Error::custom(format!(
-                    "multiple `sets` methods for field `{field_name}`"
-                ))
-                .with_span(&field_name));
-            }
+            covered.insert(field_name.to_string());
 
             if let Some(field) = fields.required.iter().find(|f| f.name == field_name) {
                 requires_setter(method, fields, self_ident, field, &requires)

@@ -36,8 +36,8 @@ impl Server {
     #[requires(host, port)]
     fn finish(self) -> Config {
         Config {
-            host: self.__stave_host.0,
-            port: self.__stave_port.0,
+            host: self.host().clone(),
+            port: self.port().clone(),
             timeout: self.timeout,
             note: self.note,
         }
