@@ -161,15 +161,13 @@ dependencies = [
 name = "stave"
 version = "0.1.1"
 dependencies = [
- "stave-macros 0.1.0",
+ "stave-macros 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "trybuild",
 ]
 
 [[package]]
 name = "stave-macros"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ce5fa7dd3956071a05f3335ac81ed991f72c0e6781ca7cd842b0315324979a3"
+version = "0.1.1"
 dependencies = [
  "darling",
  "heck",
@@ -182,6 +180,8 @@ dependencies = [
 [[package]]
 name = "stave-macros"
 version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "23aa09546a565a60490021d7e75d44efdaa19e9e4451798788ab9f9bac54f502"
 dependencies = [
  "darling",
  "heck",
