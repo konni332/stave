@@ -132,11 +132,11 @@ fn generate(
         quote! {
             #[doc(hidden)]
             #[allow(non_camel_case_types, dead_code)]
-            pub(crate) struct #unset;
+            #vis struct #unset;
 
             #[doc(hidden)]
             #[allow(non_camel_case_types, dead_code)]
-            pub(crate) struct #set<#(#marker_params),*>(#ty);
+            #vis struct #set<#(#marker_params),*>(#ty);
         }
     });
 
