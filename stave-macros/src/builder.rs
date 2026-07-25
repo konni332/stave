@@ -67,7 +67,12 @@ pub fn expand(input: ItemStruct) -> darling::Result<TokenStream> {
         let name = attrs.ident.expect("named field always has an ident");
 
         match (attrs.required.is_present(), attrs.optional.is_present()) {
-            (true, false) => required.push(make_required_field(&input.generics, &name, attrs.ty)),
+            (true, false) => required.push(make_required_field(
+                &input.generics,
+                &input.ident,
+                &name,
+                attrs.ty,
+            )),
             (false, true) => optional.push(OptionalField { name, ty: attrs.ty }),
             (true, true) => errors.push(
                 darling::Error::custom("a field cannot be both `required` and `optional`")
@@ -83,7 +88,12 @@ pub fn expand(input: ItemStruct) -> darling::Result<TokenStream> {
     Ok(generate(&input, &required, &optional))
 }
 
-fn make_required_field(generics: &Generics, name: &Ident, ty: Type) -> RequiredField {
+fn make_required_field(
+    generics: &Generics,
+    struct_name: &Ident,
+    name: &Ident,
+    ty: Type,
+) -> RequiredField {
     let pascal = name.to_string().to_pascal_case();
     let marker_params = params_used_by(generics, &ty)
         .into_iter()
@@ -93,8 +103,8 @@ fn make_required_field(generics: &Generics, name: &Ident, ty: Type) -> RequiredF
     RequiredField {
         name: name.clone(),
         ty,
-        unset: format_ident!("__{pascal}Unset"),
-        set: format_ident!("__{pascal}Set"),
+        unset: format_ident!("__{struct_name}{pascal}Unset"),
+        set: format_ident!("__{struct_name}{pascal}Set"),
         state: format_ident!("__{pascal}State"),
         storage: format_ident!("__stave_{name}"),
         marker_params,

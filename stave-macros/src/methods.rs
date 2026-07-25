@@ -37,7 +37,7 @@ pub fn expand(input: ItemImpl) -> darling::Result<TokenStream> {
         .with_span(&input.self_ty)
     })?;
 
-    let fields = Fields::from_info(&info);
+    let fields = Fields::from_info(&info, &self_ident);
 
     let mut errors = darling::Error::accumulator();
     let mut covered: HashSet<String> = HashSet::new();
@@ -126,7 +126,7 @@ struct Fields {
 }
 
 impl Fields {
-    fn from_info(info: &registry::StructInfo) -> Self {
+    fn from_info(info: &registry::StructInfo, self_ident: &Ident) -> Self {
         let required = info
             .required
             .iter()
@@ -135,8 +135,8 @@ impl Fields {
                 RequiredField {
                     name: format_ident!("{}", field.name),
                     ty: ts(&field.ty),
-                    unset: format_ident!("__{pascal}Unset"),
-                    set: format_ident!("__{pascal}Set"),
+                    unset: format_ident!("__{self_ident}{pascal}Unset"),
+                    set: format_ident!("__{self_ident}{pascal}Set"),
                     state: format_ident!("__{pascal}State"),
                     storage: format_ident!("__stave_{}", field.name),
                     marker_args: ts(&field.marker_args),

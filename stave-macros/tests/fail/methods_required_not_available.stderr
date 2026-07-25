@@ -1,41 +1,41 @@
-error[E0599]: no method named `finish` found for struct `Server<__HostUnset, __PortUnset>` in the current scope
+error[E0599]: no method named `finish` found for struct `Server<__ServerHostUnset, __ServerPortUnset>` in the current scope
   --> tests/fail/methods_required_not_available.rs:48:63
    |
  5 | #[builder]
    | ---------- method `finish` not found for this struct
 ...
 48 |     let _ = Server::new().set_timeout(Duration::from_secs(5)).finish();
-   |                                                               ^^^^^^ method not found in `Server<__HostUnset, __PortUnset>`
+   |                                                               ^^^^^^ method not found in `Server<__ServerHostUnset, __ServerPortUnset>`
    |
    = note: the method was found for
-           - `Server<__HostSet, __PortSet>`
+           - `Server<__ServerHostSet, __ServerPortSet>`
    = help: items from traits can only be used if the trait is implemented and in scope
    = note: the following trait defines an item `finish`, perhaps you need to implement it:
            candidate #1: `Hasher`
 
-error[E0599]: no method named `finish` found for struct `Server<__HostSet, __PortUnset>` in the current scope
+error[E0599]: no method named `finish` found for struct `Server<__ServerHostSet, __ServerPortUnset>` in the current scope
   --> tests/fail/methods_required_not_available.rs:50:49
    |
  5 | #[builder]
    | ---------- method `finish` not found for this struct
 ...
 50 |     let _ = Server::new().set_host("localhost").finish();
-   |                                                 ^^^^^^ method not found in `Server<__HostSet, __PortUnset>`
+   |                                                 ^^^^^^ method not found in `Server<__ServerHostSet, __ServerPortUnset>`
    |
    = note: the method was found for
-           - `Server<__HostSet, __PortSet>`
+           - `Server<__ServerHostSet, __ServerPortSet>`
    = help: items from traits can only be used if the trait is implemented and in scope
    = note: the following trait defines an item `finish`, perhaps you need to implement it:
            candidate #1: `Hasher`
 
-error[E0599]: no method named `set_note_with_host` found for struct `Server<__HostUnset, __PortSet>` in the current scope
+error[E0599]: no method named `set_note_with_host` found for struct `Server<__ServerHostUnset, __ServerPortSet>` in the current scope
   --> tests/fail/methods_required_not_available.rs:52:42
    |
  5 | #[builder]
    | ---------- method `set_note_with_host` not found for this struct
 ...
 52 |     let _ = Server::new().set_port(8080).set_note_with_host();
-   |                                          ^^^^^^^^^^^^^^^^^^ method not found in `Server<__HostUnset, __PortSet>`
+   |                                          ^^^^^^^^^^^^^^^^^^ method not found in `Server<__ServerHostUnset, __ServerPortSet>`
    |
    = note: the method was found for
-           - `Server<__HostSet, __PortState>`
+           - `Server<__ServerHostSet, __PortState>`
